@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CC Generator | Kareem Omar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Modern Credit Card Generator by Kareem Omar. Generate fake CC numbers for testing.">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(120deg, #0f2027 0%, #2c5364 50%, #8e54e9 100%);
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      background: rgba(255,255,255,0.97);
+      margin-top: 40px;
+      padding: 32px 28px 24px 28px;
+      border-radius: 18px;
+      box-shadow: 0 8px 28px 0 rgba(60, 60, 60, 0.13);
+      width: 98%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .title {
+      font-size: 2.2rem;
+      color: #7f53ac;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: 1.5px;
+    }
+    .subtitle {
+      font-size: 1.06rem;
+      color: #333;
+      opacity: 0.8;
+      margin-bottom: 24px;
+      text-align: center;
+      font-weight: 400;
+    }
+    .input-row {
+      width: 100%;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .input-row input, .input-row select {
+      flex: 1 1 120px;
+      padding: 11px 10px;
+      border-radius: 7px;
+      border: 1.5px solid #eee;
+      background: #faf8ff;
+      font-size: 1rem;
+      transition: border 0.2s;
+      outline: none;
+    }
+    .input-row input:focus, .input-row select:focus {
+      border-color: #7f53ac;
+    }
+    .gen-btn {
+      background: linear-gradient(90deg, #7f53ac, #647dee 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.12rem;
+      padding: 13px 38px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 10px;
+      margin-top: 2px;
+      box-shadow: 0 2px 7px 0 rgba(70,60,130,0.12);
+      transition: background 0.18s;
+    }
+    .gen-btn:hover {
+      background: linear-gradient(90deg, #647dee, #7f53ac 100%);
+    }
+    .cards-list {
+      width: 100%;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card-item {
+      background: linear-gradient(90deg, #e3eefe 60%, #eef1f7 100%);
+      border-radius: 11px;
+      box-shadow: 0 3px 15px 0 rgba(90,60,140,0.06);
+      padding: 16px 16px 13px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Montserrat', monospace, Arial;
+      font-size: 1.08rem;
+      word-break: break-all;
+      position: relative;
+    }
+    .ccnum {
+      font-size: 1.11rem;
+      color: #2e3569;
+      font-weight: bold;
+      letter-spacing: 1.1px;
+    }
+    .copy-btn {
+      background: #7f53ac;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 13px;
+      cursor: pointer;
+      margin-left: 16px;
+      font-size: 0.98rem;
+      transition: background 0.17s;
+    }
+    .copy-btn:hover {
+      background: #54347d;
+    }
+    .copyright {
+      margin-top: 48px;
+      text-align: center;
+      color: #eee;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      padding: 15px 0;
+      width: 100%;
+      font-weight: 500;
+      user-select: none;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 14px 5px 16px 5px; margin-top: 14px;}
+      .title { font-size: 1.25rem;}
+      .subtitle { font-size: 0.96rem;}
+      .card-item { font-size: 0.97rem; padding: 9px 5px 7px 10px;}
+      .cards-list { margin-top: 12px;}
+      .copyright { font-size: 0.96rem; margin-top: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">CC Generator</div>
+    <div class="subtitle">
+      Instantly generate fake credit card numbers for testing or educational use. Choose BIN, type, and quantity.<br>Powered by <b>Kareem Omar</b>
+    </div>
+    <form id="genForm" autocomplete="off" onsubmit="return false;">
+      <div class="input-row">
+        <input type="text" id="binInput" placeholder="Enter BIN (e.g. 414720)" maxlength="16" pattern="\d*" title="BIN (at least 6 digits)">
+        <select id="ccType">
+          <option value="random">Random</option>
+          <option value="visa">VISA</option>
+          <option value="mastercard">Mastercard</option>
+        </select>
+        <input type="number" id="countInput" min="1" max="30" value="10" title="Number of cards">
+      </div>
+      <button class="gen-btn" id="generateBtn">Generate</button>
+    </form>
+    <div class="cards-list" id="cardsList"></div>
+  </div>
+
+  <div class="copyright">
+    &copy; 2025 Kareem Omar. All Rights Reserved.
+  </div>
+
+  <script>
+    // Simple random CC generator logic
+    function luhnChecksum(cardNumber) {
+      let sum = 0;
+      let shouldDouble = false;
+      for (let i = cardNumber.length - 1; i >= 0; i--) {
+        let digit = parseInt(cardNumber[i]);
+        if (shouldDouble) {
+          digit *= 2;
+          if (digit > 9) digit -= 9;
+        }
+        sum += digit;
+        shouldDouble = !shouldDouble;
+      }
+      return sum % 10 === 0;
+    }
+
+    function generateLuhnCC(bin, len = 16) {
+      let cc = bin;
+      while (cc.length < len - 1) {
+        cc += Math.floor(Math.random() * 10);
+      }
+      // Find the last digit (checksum)
+      for (let i = 0; i <= 9; i++) {
+        let candidate = cc + i;
+        if (luhnChecksum(candidate)) return candidate;
+      }
+      return cc + '0';
+    }
+
+    function getBin(type) {
+      const visaBins = ["414720", "453968", "448578", "471646"];
+      const mcBins = ["525555", "541333", "537854", "513633"];
+      if (type === "visa") return visaBins[Math.floor(Math.random()*visaBins.length)];
+      if (type === "mastercard") return mcBins[Math.floor(Math.random()*mcBins.length)];
+      return Math.random() < 0.5 ? visaBins[Math.floor(Math.random()*visaBins.length)] : mcBins[Math.floor(Math.random()*mcBins.length)];
+    }
+
+    document.getElementById('generateBtn').onclick = function() {
+      const binInput = document.getElementById('binInput').value.trim();
+      const ccType = document.getElementById('ccType').value;
+      let count = parseInt(document.getElementById('countInput').value);
+      if (isNaN(count) || count < 1) count = 10;
+      if (count > 30) count = 30;
+
+      let bin = binInput.match(/^\d{6,16}$/) ? binInput : getBin(ccType);
+      let ccLen = 16;
+
+      const cards = [];
+      for (let i = 0; i < count; i++) {
+        let ccNum = generateLuhnCC(bin, ccLen);
+        cards.push(ccNum);
+      }
+
+      const cardsList = document.getElementById('cardsList');
+      cardsList.innerHTML = '';
+      cards.forEach(cc => {
+        const div = document.createElement('div');
+        div.className = 'card-item';
+        div.innerHTML = `<span class="ccnum">${cc}</span>
+          <button class="copy-btn" onclick="navigator.clipboard.writeText('${cc}').then(()=>{this.innerText='Copied!';setTimeout(()=>{this.innerText='Copy'},1100);})">Copy</button>`;
+        cardsList.appendChild(div);
+      });
+      return false;
+    };
+  </script>
+</body>
+</html>
